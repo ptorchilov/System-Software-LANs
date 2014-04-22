@@ -30,6 +30,7 @@ sockaddr_in select_interface(sockaddr_in* local_address);
 int create_udp_socket()
 
 struct sockaddr_in broadcast_address;
+struct sockaddr_in local_address;
 u_int16_t port;
 
 int main(int argc, char* argv[]) 
@@ -40,8 +41,7 @@ int main(int argc, char* argv[])
 	}
 
 	port = atoi(argv[1]);
-	sockaddr_in local_address;
-
+	
 	broadcast_address = select_interface(&local_address);
 	broadcast_address.sin_port = htons(port);
 
@@ -75,6 +75,7 @@ void sender(int udp_descriptor)
 
 		if (strncmp(s, list, 5) == 0) {
 			message_t type = NOTIFICATION;
+//			fgets(buf + 1, sizeof(buf), string(inet_ntoa(local_address.sin_addr)));			
 		} else {
 			message_t type = TEXT;
 		}
@@ -86,6 +87,7 @@ void sender(int udp_descriptor)
 			perror("sendto() failed.");
 			exit(-1);
 		}
+		
 	}
 }
 
@@ -150,7 +152,7 @@ sockaddr_in select_interface(sockaddr_in* local_address)
 	return broadcast_address;
 }
 
-int create_udp_socket() 
+int get_tcp_socket() 
 {
 	int descriptor = socket(PF_INET, SOCK_DGRAM, 0);
 
@@ -206,7 +208,26 @@ void receive_messages()
 		if (type == TEXT) {
 			printf("\n[%s]: %s", inet_ntoa(remote.sin_addr), buf + 1);
 		} else {
-
+			send_ip_address(remote);
 		}
 	}
+}
+
+void send_ip_address(struct sockaddr_in remote)
+{
+	buf[0] = (char) TEXT;
+	fgets(buf + 1, sizeof(buf), string(inet_ntoa(local_address.sin_addr)));
+
+	sockaddr_in client_socket_descriptor = create_udp_socket();		
+
+	int on = 1;
+    setsockopt(client_socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
+	if (sendto(client_socket_descriptor, buffer, strlen(buffer + 1) + 2, 0, 
+		(struct sockaddr*) &remote, sizeof(remote)) < 0) {
+		perror("sendto() failed.");
+		exit(-1);
+	}
+
+	close(client_socket_descriptor);
 }
