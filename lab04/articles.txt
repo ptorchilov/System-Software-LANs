@@ -1,0 +1,2 @@
+http://stackoverflow.com/questions/12681097/c-choose-interface-for-udp-multicast-socket
+https://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzab6%2Frzab6x2multicast.htm
